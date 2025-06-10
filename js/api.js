@@ -34,34 +34,72 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 let cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+let allProducts = []; // Variável para armazenar todos os produtos carregados
+let detailModalInstance; // Variável para a instância do novo modal
+
+document.addEventListener('DOMContentLoaded', function () {
+    cartModalInstance = new bootstrap.Modal(document.getElementById('cartModal'));
+    checkoutModalInstance = new bootstrap.Modal(document.getElementById('checkoutModal'));
+    // Inicializa a instância do novo modal de detalhes
+    detailModalInstance = new bootstrap.Modal(document.getElementById('productDetailModal'));
+});
+
 
 async function fetchProducts() {
     try {
         const response = await fetch('https://fakestoreapi.com/products');
-        const products = await response.json();
-        renderProducts(products);
+        allProducts = await response.json(); // Armazena os produtos na variável global
+        renderProducts(allProducts);
     } catch (error) {
         console.error("Falha ao buscar produtos:", error);
     }
 }
 
+// ALTERADO: Função para renderizar os produtos
 function renderProducts(products) {
     catalogContainer.innerHTML = '';
     products.forEach(product => {
         const productCard = document.createElement('div');
         productCard.className = 'col';
+        // Adicionamos um botão "Ver Detalhes" e simplificamos o botão do carrinho
         productCard.innerHTML = `
             <div class="card h-100 product-card">
                 <img src="${product.image}" class="card-img-top p-3" alt="${product.title}">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">${product.title}</h5>
                     <p class="card-text mt-auto"><strong>Preço: R$ ${product.price.toFixed(2)}</strong></p>
-                    <button class="btn btn-primary" onclick="addToCart(${product.id}, '${product.title}', ${product.price}, '${product.image}')">Adicionar ao Carrinho</button>
+                    <div class="d-grid gap-2 mt-2">
+                         <button class="btn btn-outline-secondary" onclick="showProductDetails(${product.id})">Ver Detalhes</button>
+                         <button class="btn btn-primary" onclick="addToCart(${product.id}, '${product.title}', ${product.price}, '${product.image}')">Adicionar ao Carrinho</button>
+                    </div>
                 </div>
             </div>
         `;
         catalogContainer.appendChild(productCard);
     });
+}
+
+// NOVO: Função para mostrar os detalhes do produto no modal
+function showProductDetails(productId) {
+    // Encontra o produto completo no array 'allProducts' usando o ID
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    // Popula o conteúdo do modal com os dados do produto
+    document.getElementById('modalProductImage').src = product.image;
+    document.getElementById('modalProductTitle').textContent = product.title;
+    document.getElementById('modalProductDescription').textContent = product.description; // Aqui usamos a descrição completa
+    document.getElementById('modalProductPrice').textContent = `R$ ${product.price.toFixed(2)}`;
+
+    // Adiciona o botão "Adicionar ao Carrinho" ao rodapé do modal
+    const modalFooter = document.getElementById('modalProductFooter');
+    modalFooter.innerHTML = `
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-primary" onclick="addToCart(${product.id}, '${product.title}', ${product.price}, '${product.image}'); detailModalInstance.hide();">Adicionar ao Carrinho</button>
+    `;
+
+    // Exibe o modal
+    detailModalInstance.show();
 }
 
 function addToCart(id, title, price, image) {
@@ -141,6 +179,8 @@ confirmOrderButton.addEventListener('click', () => {
     cart = [];
     updateCart();
 
+     confirmOrderButton.blur();
+     
     checkoutModalInstance.hide();
     alert('Obrigado! Seu pedido foi realizado com sucesso.');
 });
