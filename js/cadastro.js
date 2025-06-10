@@ -1,26 +1,51 @@
-// cadastro com crud
-
 const botao = document.getElementById('btnCadastrar');
-//const listaUsuario = [];
+const tabelaUsuarios = document.getElementById('tabelaUsuarios');
 
-// criacao registro
+function listar() {
+
+    const listaUsuario = JSON.parse(localStorage.getItem("usuarios")) || [];
+    tabelaUsuarios.innerHTML = '';
+
+    if (listaUsuario.length === 0) {
+        tabelaUsuarios.innerHTML = '<tr><td colspan="2" class="text-center">Nenhum usuário cadastrado.</td></tr>';
+        return;
+    }
+
+    listaUsuario.forEach((usuario, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${usuario.usuario}</td>
+            <td>
+                <button class="btn btn-sm btn-warning" onclick="editarUsuario(${index})">Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="excluirUsuario(${index})">Excluir</button>
+            </td>
+        `;
+        tabelaUsuarios.appendChild(tr);
+    });
+}
+
 botao.addEventListener('click', function () {
-    listaUsuario = JSON.parse(localStorage.getItem("usuarios")) || [];
+    let listaUsuario = JSON.parse(localStorage.getItem("usuarios")) || [];
     const usuario = {
         usuario: document.getElementById('login').value,
         senha: document.getElementById('senha').value
     };
     const indexEditar = document.getElementById("indexEditado").value;
-    if(indexEditar !== ""){
+
+    if (usuario.usuario === '' || usuario.senha === '') {
+        alert("Por favor, preencha todos os campos.");
+        return;
+    }
+
+    if (indexEditar !== "") {
         listaUsuario[indexEditar] = usuario;
         document.getElementById("indexEditado").value = "";
-    }else{
+    } else {
         listaUsuario.push(usuario);
     }
-    //console.log(usuario);
-    
-    listaJson = JSON.stringify(listaUsuario);
-    localStorage.setItem("usuarios", listaJson);
+
+    localStorage.setItem("usuarios", JSON.stringify(listaUsuario));
+
     document.getElementById('login').value = '';
     document.getElementById('senha').value = '';
     listar();
@@ -28,7 +53,6 @@ botao.addEventListener('click', function () {
 
 function editarUsuario(index) {
     const usuariosCadastrados = JSON.parse(localStorage.getItem("usuarios")) || [];
-    //usuariosCadastrados[3];
     const objUsuario = usuariosCadastrados[index];
     document.getElementById("login").value = objUsuario.usuario;
     document.getElementById("senha").value = objUsuario.senha;
@@ -37,14 +61,11 @@ function editarUsuario(index) {
 
 function excluirUsuario(index) {
     const usuariosCadastrados = JSON.parse(localStorage.getItem("usuarios")) || [];
-
-    if (confirm("Voce realmente quer excluir?")) {
+    if (confirm("Você realmente quer excluir este usuário?")) {
         usuariosCadastrados.splice(index, 1);
-        listaJson = JSON.stringify(usuariosCadastrados);
-        localStorage.setItem("usuarios", listaJson);
+        localStorage.setItem("usuarios", JSON.stringify(usuariosCadastrados));
+        listar();
     }
-
-    listar();
 }
 
 listar();
