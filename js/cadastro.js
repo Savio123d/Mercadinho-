@@ -26,25 +26,6 @@ botao.addEventListener('click', function () {
     listar();
 });
 
-function listar() {
-    const usuariosCadastrados = JSON.parse(localStorage.getItem("usuarios")) || [];
-    let tabela = document.getElementById('lista_usuarios');
-    tabela.innerHTML = '';
-    usuariosCadastrados.forEach((usuario, index) => {
-        let linha = document.createElement('tr');
-
-        linha.innerHTML = `
-            <td>${usuario.usuario}</td>
-            <td>${usuario.senha}</td>
-            <td>
-                <button onclick="editarUsuario(${index})">Editar</button>
-                <button onclick="excluirUsuario(${index})">Excluir</button>
-            </td>
-        `;
-        tabela.appendChild(linha);
-    });
-}
-
 function editarUsuario(index) {
     const usuariosCadastrados = JSON.parse(localStorage.getItem("usuarios")) || [];
     //usuariosCadastrados[3];
